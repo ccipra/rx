@@ -1,0 +1,26 @@
+#!/bin/bash
+#HACKER: Paraxic aka CIPRA
+
+if [[ $EUID -ne 0 ]]
+then
+	echo "You must be root to set the backlight."
+	exit 0
+else
+	BRIGHTNESS=$(cat /sys/class/backlight/intel_backlight/brightness)
+	MAX_BRIGHTNESS=$(cat /sys/class/backlight/intel_backlight/max_brightness)
+	PERCENT=$(python -c "import math; print(math.floor(float(100 * $BRIGHTNESS / $MAX_BRIGHTNESS)),\"%\");" | sed "s/\ //")
+	echo "Brightness is $PERCENT."
+	if [[ -n $1 ]]
+	then
+		if [[ $1 -lt 100 ]]
+		then
+			echo "Aborting Brightness less than 100 can result in blank screen."
+			exit 0
+		fi
+		echo $1 > /sys/class/backlight/intel_backlight/brightness
+		BRIGHTNESS=$(cat /sys/class/backlight/intel_backlight/brightness)
+		PERCENT=$(python -c "import math; print(math.floor(float(100 * $BRIGHTNESS / $MAX_BRIGHTNESS)),\"%\");" | sed "s/\ //")
+	        echo "New Brightness is $PERCENT"
+	fi
+fi
+exit 0
